@@ -52,7 +52,7 @@ module aksIdentity 'modules/Identity/userassigned.bicep' = {
   name: aksIdentityName
   params: {
     location: location
-    identityName: 'aksIdentity'
+    identityName: aksIdentityName
   }
 }
 
