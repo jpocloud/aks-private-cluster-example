@@ -50,7 +50,7 @@
       "value": "1.22.6"
     },
     "networkPlugin": {
-      "value": "azure"
+      "value": "kubenet"
     },
     "rtAKSName": {
       "value": "udr"

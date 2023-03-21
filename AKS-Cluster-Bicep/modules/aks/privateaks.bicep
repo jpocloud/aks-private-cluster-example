@@ -32,11 +32,39 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
     agentPoolProfiles: [
       {
         enableAutoScaling: enableAutoScaling
-        name: 'defaultpool'
+        name: 'systempool'
         availabilityZones: !empty(availabilityZones) ? availabilityZones : null
         mode: 'System'
         enableEncryptionAtHost: true
-        count: 3
+        count: 1
+        minCount: enableAutoScaling ? 1 : null
+        maxCount: enableAutoScaling ? 3 : null
+        vmSize: 'Standard_D2as_v4'
+        osDiskSizeGB: 30
+        type: 'VirtualMachineScaleSets'
+        vnetSubnetID: subnetId
+      }
+      {
+        enableAutoScaling: enableAutoScaling
+        name: 'frontend'
+        availabilityZones: !empty(availabilityZones) ? availabilityZones : null
+        mode: 'User'
+        enableEncryptionAtHost: true
+        count: 1
+        minCount: enableAutoScaling ? 1 : null
+        maxCount: enableAutoScaling ? 3 : null
+        vmSize: 'Standard_D2as_v4'
+        osDiskSizeGB: 30
+        type: 'VirtualMachineScaleSets'
+        vnetSubnetID: subnetId
+      }
+      {
+        enableAutoScaling: enableAutoScaling
+        name: 'backend'
+        availabilityZones: !empty(availabilityZones) ? availabilityZones : null
+        mode: 'User'
+        enableEncryptionAtHost: true
+        count: 1
         minCount: enableAutoScaling ? 1 : null
         maxCount: enableAutoScaling ? 3 : null
         vmSize: 'Standard_D2as_v4'
@@ -46,6 +74,14 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
       }
     ]
     autoScalerProfile: enableAutoScaling ? autoScalingProfile : null
+    //need to parameterize, https://learn.microsoft.com/en-us/azure/templates/microsoft.containerservice/managedclusters?pivots=deployment-language-bicep#managedclusterautoupgradeprofile
+    autoUpgradeProfile: {
+      nodeOSUpgradeChannel: 'NodeImage'
+      upgradeChannel: 'patch'
+    }
+    
+    disableLocalAccounts: true
+
     networkProfile: networkPlugin == 'azure' ? {
       networkPlugin: 'azure'
       outboundType: 'userDefinedRouting'
@@ -84,6 +120,16 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
       azurepolicy: {
         enabled: true
       }
+      //Enable the following two configurations for Workload identity and OIDC Issuer
+      // Features are currently in preview
+      // workloadIdentity: {
+      //   enabled: true
+      // }
+      // oidcIssuerProfile: {
+      //   enabled: true
+      // }
+
+
       // ingressApplicationGateway: {
       //   enabled: true
       //   config: {
