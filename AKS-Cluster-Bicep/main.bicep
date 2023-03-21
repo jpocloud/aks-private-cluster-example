@@ -17,6 +17,8 @@ param availabilityZones array
 param enableAutoScaling bool
 param autoScalingProfile object
 
+param podCidr string //= '172.17.0.0/16'
+
 @allowed([
   'azure'
   'kubenet'
@@ -147,6 +149,7 @@ module aksCluster 'modules/aks/privateaks.bicep' = {
     identity: {
       '${aksIdentity.outputs.identityid}' : {}
     }
+    podCidr: podCidr
     // appGatewayResourceId: appGateway.id
   }
   dependsOn: [

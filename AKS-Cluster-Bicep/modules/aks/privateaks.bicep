@@ -10,6 +10,7 @@ param location string = resourceGroup().location
 param availabilityZones array
 param enableAutoScaling bool
 param autoScalingProfile object
+param podCidr string // = '172.17.0.0/16'
 
 @allowed([
   'azure'
@@ -96,7 +97,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
       dnsServiceIP: '192.168.100.10'
       serviceCidr: '192.168.100.0/24'
       networkPolicy: 'calico'
-      podCidr: '172.17.0.0/16'
+      podCidr: podCidr
     }
     apiServerAccessProfile: {
       enablePrivateCluster: true

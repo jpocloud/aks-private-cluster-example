@@ -72,6 +72,9 @@
     },
     "aksIdentityName": {
       "value": "aksIdentity"
+    },
+    "podCidr":{
+      "value": "172.17.0.0/16"
     }
   }
 }
