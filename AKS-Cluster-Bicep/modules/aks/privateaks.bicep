@@ -11,6 +11,14 @@ param availabilityZones array
 param enableAutoScaling bool
 param autoScalingProfile object
 param podCidr string // = '172.17.0.0/16'
+param upgradeChannel string
+param nodeOSUpgradeChannel string
+
+param systemNodePoolReplicas int
+param userNodePool1Replicas int
+param userNodePool2Replicas int
+
+param vmSize string
 
 @allowed([
   'azure'
@@ -37,10 +45,10 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
         availabilityZones: !empty(availabilityZones) ? availabilityZones : null
         mode: 'System'
         enableEncryptionAtHost: true
-        count: 1
+        count: systemNodePoolReplicas
         minCount: enableAutoScaling ? 1 : null
         maxCount: enableAutoScaling ? 3 : null
-        vmSize: 'Standard_D2as_v4'
+        vmSize: vmSize
         osDiskSizeGB: 30
         type: 'VirtualMachineScaleSets'
         vnetSubnetID: subnetId
@@ -51,10 +59,10 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
         availabilityZones: !empty(availabilityZones) ? availabilityZones : null
         mode: 'User'
         enableEncryptionAtHost: true
-        count: 1
+        count: userNodePool1Replicas
         minCount: enableAutoScaling ? 1 : null
         maxCount: enableAutoScaling ? 3 : null
-        vmSize: 'Standard_D2as_v4'
+        vmSize: vmSize
         osDiskSizeGB: 30
         type: 'VirtualMachineScaleSets'
         vnetSubnetID: subnetId
@@ -65,20 +73,20 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
         availabilityZones: !empty(availabilityZones) ? availabilityZones : null
         mode: 'User'
         enableEncryptionAtHost: true
-        count: 1
+        count: userNodePool2Replicas
         minCount: enableAutoScaling ? 1 : null
         maxCount: enableAutoScaling ? 3 : null
-        vmSize: 'Standard_D2as_v4'
+        vmSize: vmSize
         osDiskSizeGB: 30
         type: 'VirtualMachineScaleSets'
         vnetSubnetID: subnetId
       }
     ]
     autoScalerProfile: enableAutoScaling ? autoScalingProfile : null
-    //need to parameterize, https://learn.microsoft.com/en-us/azure/templates/microsoft.containerservice/managedclusters?pivots=deployment-language-bicep#managedclusterautoupgradeprofile
+
     autoUpgradeProfile: {
-      nodeOSUpgradeChannel: 'NodeImage'
-      upgradeChannel: 'patch'
+      nodeOSUpgradeChannel: nodeOSUpgradeChannel
+      upgradeChannel: upgradeChannel
     }
     
     disableLocalAccounts: true

@@ -2,6 +2,7 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    //RG Name for AKS cluster
     "rgName": {
       "value": "aks-private-demo"
     },
@@ -21,6 +22,25 @@
     },
     "keyvaultName": {
       "value": "aksprivate-demo-keyvault"
+    },
+    // https://learn.microsoft.com/en-us/azure/templates/microsoft.containerservice/managedclusters?pivots=deployment-language-bicep#managedclusterautoupgradeprofile
+    "nodeOSUpgradeChannel": {
+      "value": "NodeImage"
+    },
+    "upgradeChannel": {
+      "value": "rapid"
+    },
+    "vmSize": {
+      "value": "Standard_D2as_v4"
+    },
+    "systemNodePoolReplicas":{
+      "value": 1
+    },
+    "userNodePool1Replicas":{
+      "value": 1
+    },
+    "userNodePool2Replicas":{
+      "value": 1
     },
     "enableAutoScaling": {
       "value": false
@@ -46,35 +66,41 @@
         "skip-nodes-with-system-pods": "true"
       }
     },
-    "kubernetesVersion": {
-      "value": "1.22.6"
-    },
+    // "kubernetesVersion": {
+    //   "value": "1.22.6"
+    // },
     "networkPlugin": {
       "value": "kubenet"
     },
     "rtAKSName": {
       "value": "udr"
     },
+    //Log Analytics name
     "akslaWorkspaceName": {
       "value": "aksprivatelaworkspace"
     },
     "vnetName": {
       "value": "vnet"
     },
+    "vnetRgName": {
+      "value": "aks-private-demo"
+    },
     "subnetName": {
       "value": "aks-workload-subnet"
     },
+    "podCidr":{
+      "value": "172.17.0.0/16"
+    },
+    //AAD Group ID for dev access
     "aksuseraccessprincipalId": {
       "value": "dfaf0c7a-c0bf-4bcb-b459-03ec9dae8d25"
     },
+    //AAD Group ID for admin access
     "aksadminaccessprincipalId": {
       "value": "17cc79c2-cfd6-436e-83f1-d9ae6fe24fed"
     },
     "aksIdentityName": {
       "value": "aksIdentity"
-    },
-    "podCidr":{
-      "value": "172.17.0.0/16"
     }
   }
 }

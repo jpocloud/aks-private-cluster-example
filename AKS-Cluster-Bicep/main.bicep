@@ -5,8 +5,6 @@ param clusterName string
 param akslaWorkspaceName string
 param vnetName string
 param subnetName string
-// param appGatewayName string
-// param rtAppGWSubnetName string
 param aksuseraccessprincipalId string
 param aksadminaccessprincipalId string
 param aksIdentityName string
@@ -18,6 +16,15 @@ param enableAutoScaling bool
 param autoScalingProfile object
 
 param podCidr string //= '172.17.0.0/16'
+param upgradeChannel string
+param nodeOSUpgradeChannel string
+ 
+
+param systemNodePoolReplicas int
+param userNodePool1Replicas int
+param userNodePool2Replicas int
+
+param vmSize string
 
 @allowed([
   'azure'
@@ -25,41 +32,21 @@ param podCidr string //= '172.17.0.0/16'
 ])
 param networkPlugin string = 'kubenet'
 
-//var akskubenetpodcidr = '172.17.0.0/24'
-// var ipdelimiters = [
-//   '.'
-//   '/'
-// ]
-
 param acrName string //User to provide each time
 param keyvaultName string //user to provide each time
-
-// module rg 'modules/resource-group/rg.bicep' = {
-//   name: rgName
-//   params: {
-//     rgName: rgName
-//     location: location
-//   }
-// }
 
 resource rg 'Microsoft.Resources/resourceGroups@2020-06-01' existing = {
   name: rgName
 }
-
 
 module aksIdentity 'modules/Identity/userassigned.bicep' = {
   scope: resourceGroup(rg.name)
   name: aksIdentityName
   params: {
     location: location
-    identityName: 'aksIdentity'
+    identityName: aksIdentityName
   }
 }
-
-// resource aksIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
-//   scope: resourceGroup(rg.name)
-//   name: aksIdentityName
-// }
 
 module aksPodIdentityRole 'modules/Identity/role.bicep' = {
   scope: resourceGroup(rg.name)
@@ -99,11 +86,6 @@ module privateDNSLinkAKS 'modules/vnet/privatednslink.bicep' = {
 }
 
 
-// resource pvtdnsAKSZone 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
-//   name: 'privatelink.${toLower(location)}.azmk8s.io'
-//   scope: resourceGroup(rg.name)
-// }
-
 module aksPolicy 'modules/policy/policy.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'aksPolicy'
@@ -124,10 +106,6 @@ resource aksSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-02-01' existi
   name: '${vnetName}/${subnetName}'
 }
 
-// resource appGateway 'Microsoft.Network/applicationGateways@2021-02-01' existing = {
-//   scope: resourceGroup(rg.name)
-//   name: appGatewayName
-// }
 
 module aksCluster 'modules/aks/privateaks.bicep' = {
   scope: resourceGroup(rg.name)
@@ -136,11 +114,17 @@ module aksCluster 'modules/aks/privateaks.bicep' = {
     autoScalingProfile:autoScalingProfile
     enableAutoScaling: enableAutoScaling
     availabilityZones:availabilityZones
+    vmSize: vmSize
     location: location
     aadGroupdIds: [
       aksadminaccessprincipalId
     ]
     clusterName: clusterName
+    userNodePool1Replicas: userNodePool1Replicas
+    userNodePool2Replicas: userNodePool2Replicas
+    systemNodePoolReplicas: systemNodePoolReplicas
+    nodeOSUpgradeChannel:nodeOSUpgradeChannel
+    upgradeChannel: upgradeChannel
     kubernetesVersion: kubernetesVersion
     networkPlugin: networkPlugin
     logworkspaceid: akslaworkspace.outputs.laworkspaceId
@@ -150,13 +134,11 @@ module aksCluster 'modules/aks/privateaks.bicep' = {
       '${aksIdentity.outputs.identityid}' : {}
     }
     podCidr: podCidr
-    // appGatewayResourceId: appGateway.id
   }
   dependsOn: [
     aksPvtDNSContrib
     aksPvtNetworkContrib
     aksPodIdentityRole
-    //aksRouteTableRole
     aksPolicy
   ]
 }
@@ -231,24 +213,7 @@ module aksadminaccess 'modules/Identity/role.bicep' = {
   }
 }
 
-// module appGatewayContributerRole 'modules/Identity/appgtwyingressroles.bicep' = {
-//   scope: resourceGroup(rg.name)
-//   name: 'appGatewayContributerRole'
-//   params: {
-//     principalId: aksCluster.outputs.ingressIdentity
-//     roleGuid: 'b24988ac-6180-42a0-ab88-20f7382dd24c' //Contributor
-//     applicationGatewayName: appGateway.name
-//   }
-// }
 
-// module appGatewayReaderRole 'modules/Identity/role.bicep' = {
-//   scope: resourceGroup(rg.name)
-//   name: 'appGatewayReaderRole'
-//   params: {
-//     principalId: aksCluster.outputs.ingressIdentity
-//     roleGuid: 'acdd72a7-3385-48ef-bd42-f606fba81ae7' //Reader
-//   }
-// }
 
 module keyvaultAccessPolicy 'modules/keyvault/keyvault.bicep' = {
   scope: resourceGroup(rg.name)
@@ -259,27 +224,6 @@ module keyvaultAccessPolicy 'modules/keyvault/keyvault.bicep' = {
     aksuseraccessprincipalId: aksuseraccessprincipalId
   }
 }
-
-// resource rtAppGW 'Microsoft.Network/routeTables@2021-02-01' existing ={
-//   scope: resourceGroup(rgName)
-//   name: rtAppGWSubnetName
-// }
-
-
-// module appgwroutetableroutes 'modules/vnet/routetableroutes.bicep' = [for i in range(0,3): if(networkPlugin == 'kubenet'){
-//   scope: resourceGroup(rg.name)
-//   name: 'aks-vmss-appgw-pod-node-${i}'
-//   params: {
-//     routetableName: rtAppGW.name
-//     routeName: 'aks-vmss-appgw-pod-node-${i}'
-//     properties: {
-//       nextHopType: 'VirtualAppliance'
-//       nextHopIpAddress: '${split(aksSubnet.properties.addressPrefix, ipdelimiters)[0]}.${split(aksSubnet.properties.addressPrefix, ipdelimiters)[1]}.${int(split(aksSubnet.properties.addressPrefix, ipdelimiters)[2])}.${int(split(aksSubnet.properties.addressPrefix, ipdelimiters)[3])+i+4}'
-//       addressPrefix: '${split(akskubenetpodcidr, ipdelimiters)[0]}.${split(akskubenetpodcidr, ipdelimiters)[1]}.${int(split(akskubenetpodcidr, ipdelimiters)[2])+i}.${split(akskubenetpodcidr, ipdelimiters)[3]}/${split(akskubenetpodcidr, ipdelimiters)[4]}'
-//     }
-//   }
-// }]
-
 
 //  Telemetry Deployment
 @description('Enable usage and telemetry feedback to Microsoft.')
