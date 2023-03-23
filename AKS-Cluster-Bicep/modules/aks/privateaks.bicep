@@ -89,7 +89,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
       upgradeChannel: upgradeChannel
     }
     
-    disableLocalAccounts: false
+    disableLocalAccounts: true
 
     networkProfile: networkPlugin == 'azure' ? {
       networkPlugin: 'azure'
