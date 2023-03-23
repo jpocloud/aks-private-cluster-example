@@ -5,7 +5,7 @@ param aadGroupdIds array
 param subnetId string
 param identity object
 // param appGatewayResourceId string
-param kubernetesVersion string
+//param kubernetesVersion string
 param location string = resourceGroup().location
 param availabilityZones array
 param enableAutoScaling bool
@@ -55,7 +55,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
       }
       {
         enableAutoScaling: enableAutoScaling
-        name: 'frontend'
+        name: 'usernp1'
         availabilityZones: !empty(availabilityZones) ? availabilityZones : null
         mode: 'User'
         enableEncryptionAtHost: true
@@ -69,7 +69,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
       }
       {
         enableAutoScaling: enableAutoScaling
-        name: 'backend'
+        name: 'usernp2'
         availabilityZones: !empty(availabilityZones) ? availabilityZones : null
         mode: 'User'
         enableEncryptionAtHost: true
@@ -89,7 +89,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
       upgradeChannel: upgradeChannel
     }
     
-    disableLocalAccounts: true
+    disableLocalAccounts: false
 
     networkProfile: networkPlugin == 'azure' ? {
       networkPlugin: 'azure'

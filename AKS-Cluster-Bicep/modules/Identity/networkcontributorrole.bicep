@@ -2,6 +2,7 @@ param principalId string
 param roleGuid string
 param vnetName string
 
+
 resource spokeVnet 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
   name: vnetName
 }

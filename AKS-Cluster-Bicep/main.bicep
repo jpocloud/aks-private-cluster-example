@@ -3,13 +3,16 @@ targetScope = 'subscription'
 param rgName string
 param clusterName string
 param akslaWorkspaceName string
+param vnetRgName string
 param vnetName string
 param subnetName string
 param aksuseraccessprincipalId string
 param aksadminaccessprincipalId string
 param aksIdentityName string
-param kubernetesVersion string
+//param kubernetesVersion string
 param rtAKSName string
+param rtRGName string
+
 param location string = deployment().location
 param availabilityZones array
 param enableAutoScaling bool
@@ -18,13 +21,16 @@ param autoScalingProfile object
 param podCidr string //= '172.17.0.0/16'
 param upgradeChannel string
 param nodeOSUpgradeChannel string
- 
+
 
 param systemNodePoolReplicas int
 param userNodePool1Replicas int
 param userNodePool2Replicas int
 
 param vmSize string
+
+param keyVaultRGName string
+param acrRGName string
 
 @allowed([
   'azure'
@@ -38,6 +44,16 @@ param keyvaultName string //user to provide each time
 resource rg 'Microsoft.Resources/resourceGroups@2020-06-01' existing = {
   name: rgName
 }
+
+// resource kv 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
+//   scope: keyVaultRGName
+//   name: keyvaultName
+// }
+
+// resource acr 'Microsoft.ContainerRegistry/registries@2022-12-01' existing ={
+//   scope: acrRGName
+//   name: acrName
+// }
 
 module aksIdentity 'modules/Identity/userassigned.bicep' = {
   scope: resourceGroup(rg.name)
@@ -69,7 +85,7 @@ module privatednsAKSZone 'modules/vnet/privatednszone.bicep' = {
 
 resource vnet 'Microsoft.Network/virtualNetworks@2022-09-01' existing = {
   name: vnetName
-  scope: resourceGroup(rg.name)
+  scope: resourceGroup(vnetRgName)
 }
 
 
@@ -102,7 +118,7 @@ module akslaworkspace 'modules/laworkspace/la.bicep' = {
 }
 
 resource aksSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-02-01' existing = {
-  scope: resourceGroup(rg.name)
+  scope: resourceGroup(vnetRgName)
   name: '${vnetName}/${subnetName}'
 }
 
@@ -125,7 +141,7 @@ module aksCluster 'modules/aks/privateaks.bicep' = {
     systemNodePoolReplicas: systemNodePoolReplicas
     nodeOSUpgradeChannel:nodeOSUpgradeChannel
     upgradeChannel: upgradeChannel
-    kubernetesVersion: kubernetesVersion
+    //kubernetesVersion: kubernetesVersion
     networkPlugin: networkPlugin
     logworkspaceid: akslaworkspace.outputs.laworkspaceId
     privateDNSZoneId: privatednsAKSZone.outputs.privateDNSZoneId
@@ -144,7 +160,7 @@ module aksCluster 'modules/aks/privateaks.bicep' = {
 }
 
 module aksRouteTableRole 'modules/Identity/rtrole.bicep' = {
-  scope: resourceGroup(rg.name)
+  scope: resourceGroup(rtRGName)
   name: 'aksRouteTableRole'
   params: {
     principalId: aksIdentity.outputs.principalId
@@ -154,7 +170,7 @@ module aksRouteTableRole 'modules/Identity/rtrole.bicep' = {
 }
 
 module acraksaccess 'modules/Identity/acrrole.bicep' = {
-  scope: resourceGroup(rg.name)
+  scope: resourceGroup(acrRGName)
   name: 'acraksaccess'
   params: {
     principalId: aksCluster.outputs.kubeletIdentity
@@ -164,7 +180,7 @@ module acraksaccess 'modules/Identity/acrrole.bicep' = {
 }
 
 module aksPvtNetworkContrib 'modules/Identity/networkcontributorrole.bicep' = {
-  scope: resourceGroup(rg.name)
+  scope: resourceGroup(vnetRgName)
   name: 'aksPvtNetworkContrib'
   params: {
     principalId: aksIdentity.outputs.principalId
@@ -216,7 +232,7 @@ module aksadminaccess 'modules/Identity/role.bicep' = {
 
 
 module keyvaultAccessPolicy 'modules/keyvault/keyvault.bicep' = {
-  scope: resourceGroup(rg.name)
+  scope: resourceGroup(keyVaultRGName)
   name: 'akskeyvaultaddonaccesspolicy'
   params: {
     keyvaultManagedIdentityObjectId: aksCluster.outputs.keyvaultaddonIdentity
