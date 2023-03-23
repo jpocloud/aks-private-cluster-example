@@ -10,6 +10,5 @@
 2. Update parameters-main.json template
 3. Deploy Template, update location to match desired cluster region:
 ```
-cd AKS-Cluster-Bicep/
-az deployment sub create --template-file main.bicep --parameters @parameters-main.json --location eastus2
+az deployment sub create --template-file AKS-Cluster-Bicep/main.bicep --parameters @AKS-Cluster-Bicep/parameters-main.json --location eastus2
 ```
