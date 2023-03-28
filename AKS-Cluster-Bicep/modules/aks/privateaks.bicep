@@ -4,7 +4,6 @@ param privateDNSZoneId string
 param aadGroupdIds array
 param subnetId string
 param identity object
-// param appGatewayResourceId string
 //param kubernetesVersion string
 param location string = resourceGroup().location
 param availabilityZones array
@@ -25,9 +24,8 @@ param vmSize string
   'kubenet'
 ])
 param networkPlugin string = 'kubenet'
-//param appGatewayIdentityResourceId string
 
-resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-preview' = {
+resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-11-01' = {
   name: clusterName
   location: location
   identity: {
@@ -46,6 +44,9 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
         mode: 'System'
         enableEncryptionAtHost: true
         count: systemNodePoolReplicas
+        nodeTaints: [
+          'CriticalAddonsOnly=true:NoSchedule'
+        ]
         minCount: enableAutoScaling ? 1 : null
         maxCount: enableAutoScaling ? 3 : null
         vmSize: vmSize
@@ -109,6 +110,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
     }
     apiServerAccessProfile: {
       enablePrivateCluster: true
+      disableRunCommand: true
       privateDNSZone: privateDNSZoneId
       enablePrivateClusterPublicFQDN: false
     }
@@ -119,6 +121,25 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
       managed: true
       tenantID: subscription().tenantId
     }
+    // Required for Workload Identity
+    // oidcIssuerProfile: {
+    //   enabled: true
+    // }
+    securityProfile: {
+      defender:{
+        logAnalyticsWorkspaceResourceId: logworkspaceid
+        securityMonitoring: {
+          enabled: true
+        }
+      }
+    }
+
+      //Enable the following  configurations for Workload identity
+      // Features are currently in preview
+      // workloadIdentity: {
+      //   enabled: true
+      // }
+    
     addonProfiles: {
       omsagent: {
         config: {
@@ -129,23 +150,6 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
       azurepolicy: {
         enabled: true
       }
-      //Enable the following two configurations for Workload identity and OIDC Issuer
-      // Features are currently in preview
-      // workloadIdentity: {
-      //   enabled: true
-      // }
-      // oidcIssuerProfile: {
-      //   enabled: true
-      // }
-
-
-      // ingressApplicationGateway: {
-      //   enabled: true
-      //   config: {
-      //     applicationGatewayId: appGatewayResourceId
-      //     effectiveApplicationGatewayId: appGatewayResourceId
-      //   }
-      // }
       azureKeyvaultSecretsProvider: {
         enabled: true
       }
@@ -153,6 +157,33 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-01-02-previ
   }
 }
 
+resource aksdiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'aksdiagnostics'
+  scope: aksCluster
+  properties: {
+    logs: [
+      {
+        category: 'kube-audit-admin'
+        enabled: true
+        retentionPolicy: {
+          days: 30
+          enabled: true
+        }
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+        retentionPolicy: {
+          days: 30
+          enabled: true
+        }
+      }
+    ]
+    workspaceId: logworkspaceid
+  }
+}
+
 output kubeletIdentity string = aksCluster.properties.identityProfile.kubeletidentity.objectId
-//output ingressIdentity string = aksCluster.properties.addonProfiles.ingressApplicationGateway.identity.objectId
 output keyvaultaddonIdentity string = aksCluster.properties.addonProfiles.azureKeyvaultSecretsProvider.identity.objectId

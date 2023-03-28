@@ -2,9 +2,9 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    //RG Name for AKS cluster
+    //RG Name for AKS cluster, identity, dns zone to be deployed in
     "rgName": {
-      "value": "akscluster"
+      "value": "jp-aks"
     },
     "availabilityZones": {
       "value": [
@@ -15,29 +15,30 @@
       ]
     },
     "clusterName": {
-      "value": "aks-private-demo"
+      "value": "jp-aks"
     },
     "acrName": {
-      "value": "privateacrdemo"
+      "value": "ACR9FC801"
     },
     "acrRGName": {
-      "value": "aks-private-demo"
+      "value": "2023-03-23-RG-01"
     },
     "keyvaultName": {
-      "value": "aksprivate-demo-keyvault"
+      "value": "KEY9FC801"
     },
     "keyVaultRGName": {
-      "value": "aks-private-demo"
+      "value": "2023-03-23-RG-01"
     },
     // https://learn.microsoft.com/en-us/azure/templates/microsoft.containerservice/managedclusters?pivots=deployment-language-bicep#managedclusterautoupgradeprofile
     "nodeOSUpgradeChannel": {
-      "value": "NodeImage"
+      "value": "None"
     },
     "upgradeChannel": {
-      "value": "rapid"
+      "value": "None"
     },
+    //Currently all nodes will use this SKU.
     "vmSize": {
-      "value": "Standard_D4lds_v5"
+      "value": "Standard_D2AS_V4"
     },
     "systemNodePoolReplicas":{
       "value": 1
@@ -48,6 +49,7 @@
     "userNodePool2Replicas":{
       "value": 1
     },
+    //Autoscaling supported in template but not enabling
     "enableAutoScaling": {
       "value": false
     },
@@ -72,6 +74,9 @@
         "skip-nodes-with-system-pods": "true"
       }
     },
+    // Disabled version specification reason: 
+    //1) Use auto-upgrade instead for non-prod, 
+    //2) prod upgrades to be handled outside of template for more control
     // "kubernetesVersion": {
     //   "value": "1.22.6"
     // },
@@ -80,27 +85,31 @@
     },
     //Route table name
     "rtAKSName": {
-      "value": "udr"
+      "value": "route9fc801"
     },
     //Route table Resource group
     "rtRGName": {
-      "value": "aks-private-demo"
+      "value": "2023-03-23-rg-01"
     },
     //Log Analytics name
     "akslaWorkspaceName": {
-      "value": "aksprivatelaworkspace"
+      "value": "log9fc0801"
+    },
+    //Log Analytics RG name
+    "akslaWorkspaceRGName": {
+      "value": "2023-03-23-RG-01"
     },
     "vnetName": {
-      "value": "vnet"
+      "value": "VNET9FC8"
     },
     "vnetRgName": {
-      "value": "aks-private-demo"
+      "value": "2023-03-23-RG-01"
     },
     "subnetName": {
-      "value": "aks-workload-subnet"
+      "value": "jpaks"
     },
     "podCidr":{
-      "value": "172.18.0.0/16"
+      "value": "172.19.0.0/16"
     },
     //AAD Group ID for dev access
     "aksuseraccessprincipalId": {
@@ -111,7 +120,7 @@
       "value": "17cc79c2-cfd6-436e-83f1-d9ae6fe24fed"
     },
     "aksIdentityName": {
-      "value": "aksIdentity-demo"
+      "value": "aksIdentity-prod"
     }
   }
 }

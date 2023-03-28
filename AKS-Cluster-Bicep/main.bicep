@@ -3,6 +3,7 @@ targetScope = 'subscription'
 param rgName string
 param clusterName string
 param akslaWorkspaceName string
+param akslaWorkspaceRGName string
 param vnetRgName string
 param vnetName string
 param subnetName string
@@ -26,7 +27,6 @@ param nodeOSUpgradeChannel string
 param systemNodePoolReplicas int
 param userNodePool1Replicas int
 param userNodePool2Replicas int
-
 param vmSize string
 
 param keyVaultRGName string
@@ -44,16 +44,6 @@ param keyvaultName string //user to provide each time
 resource rg 'Microsoft.Resources/resourceGroups@2020-06-01' existing = {
   name: rgName
 }
-
-// resource kv 'Microsoft.KeyVault/vaults@2022-11-01' existing = {
-//   scope: keyVaultRGName
-//   name: keyvaultName
-// }
-
-// resource acr 'Microsoft.ContainerRegistry/registries@2022-12-01' existing ={
-//   scope: acrRGName
-//   name: acrName
-// }
 
 module aksIdentity 'modules/Identity/userassigned.bicep' = {
   scope: resourceGroup(rg.name)
@@ -108,13 +98,9 @@ module aksPolicy 'modules/policy/policy.bicep' = {
   params: {}
 }
 
-module akslaworkspace 'modules/laworkspace/la.bicep' = {
-  scope: resourceGroup(rg.name)
-  name: 'akslaworkspace'
-  params: {
-    location: location
-    workspaceName: akslaWorkspaceName
-  }
+resource akslaworkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing ={
+  scope: resourceGroup(akslaWorkspaceRGName)
+  name: akslaWorkspaceName
 }
 
 resource aksSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-02-01' existing = {
@@ -143,7 +129,7 @@ module aksCluster 'modules/aks/privateaks.bicep' = {
     upgradeChannel: upgradeChannel
     //kubernetesVersion: kubernetesVersion
     networkPlugin: networkPlugin
-    logworkspaceid: akslaworkspace.outputs.laworkspaceId
+    logworkspaceid: akslaworkspace.id
     privateDNSZoneId: privatednsAKSZone.outputs.privateDNSZoneId
     subnetId: aksSubnet.id
     identity: {
@@ -228,8 +214,6 @@ module aksadminaccess 'modules/Identity/role.bicep' = {
     roleGuid: '0ab0b1a8-8aac-4efd-b8c2-3ee1fb270be8' //Azure Kubernetes Service Cluster Admin Role
   }
 }
-
-
 
 module keyvaultAccessPolicy 'modules/keyvault/keyvault.bicep' = {
   scope: resourceGroup(keyVaultRGName)
