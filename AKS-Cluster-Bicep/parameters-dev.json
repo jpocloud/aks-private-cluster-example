@@ -1,0 +1,126 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    //RG Name for AKS cluster, identity, dns zone to be deployed in
+    "rgName": {
+      "value": "akscluster"
+    },
+    "availabilityZones": {
+      "value": [
+        //"1"
+          "1",
+          "2",
+          "3"
+      ]
+    },
+    "clusterName": {
+      "value": "aks-private-demo"
+    },
+    "acrName": {
+      "value": "privateacrdemo"
+    },
+    "acrRGName": {
+      "value": "aks-private-demo"
+    },
+    "keyvaultName": {
+      "value": "aksprivate-demo-keyvault"
+    },
+    "keyVaultRGName": {
+      "value": "aks-private-demo"
+    },
+    // https://learn.microsoft.com/en-us/azure/templates/microsoft.containerservice/managedclusters?pivots=deployment-language-bicep#managedclusterautoupgradeprofile
+    "nodeOSUpgradeChannel": {
+      "value": "NodeImage"
+    },
+    "upgradeChannel": {
+      "value": "rapid"
+    },
+    //Currently all nodes will use this SKU.
+    "vmSize": {
+      "value": "Standard_D4lds_v5"
+    },
+    "systemNodePoolReplicas":{
+      "value": 1
+    },
+    "userNodePool1Replicas":{
+      "value": 1
+    },
+    "userNodePool2Replicas":{
+      "value": 1
+    },
+    //Autoscaling supported in template but not enabling
+    "enableAutoScaling": {
+      "value": false
+    },
+    "autoScalingProfile": {
+      "value": {
+        "balance-similar-node-groups": "false",
+        "expander": "random",
+        "max-empty-bulk-delete": "10",
+        "max-graceful-termination-sec": "600",
+        "max-node-provision-time": "15m",
+        "max-total-unready-percentage": "45",
+        "new-pod-scale-up-delay": "0s",
+        "ok-total-unready-count": "3",
+        "scale-down-delay-after-add": "10m",
+        "scale-down-delay-after-delete": "10s",
+        "scale-down-delay-after-failure": "3m",
+        "scale-down-unneeded-time": "10m",
+        "scale-down-unready-time": "20m",
+        "scale-down-utilization-threshold": "0.5",
+        "scan-interval": "10s",
+        "skip-nodes-with-local-storage": "false",
+        "skip-nodes-with-system-pods": "true"
+      }
+    },
+    // Disabled version specification reason: 
+    //1) Use auto-upgrade instead for non-prod, 
+    //2) prod upgrades to be handled outside of template for more control
+    // "kubernetesVersion": {
+    //   "value": "1.22.6"
+    // },
+    "networkPlugin": {
+      "value": "kubenet"
+    },
+    //Route table name
+    "rtAKSName": {
+      "value": "udr"
+    },
+    //Route table Resource group
+    "rtRGName": {
+      "value": "aks-private-demo"
+    },
+    //Log Analytics name
+    "akslaWorkspaceName": {
+      "value": "aksprivatelaworkspace"
+    },
+    //Log Analytics RG name
+    "akslaWorkspaceRGName": {
+      "value": "aks-private-demo"
+    },
+    "vnetName": {
+      "value": "vnet"
+    },
+    "vnetRgName": {
+      "value": "aks-private-demo"
+    },
+    "subnetName": {
+      "value": "aks-workload-subnet"
+    },
+    "podCidr":{
+      "value": "172.18.0.0/16"
+    },
+    //AAD Group ID for dev access
+    "aksuseraccessprincipalId": {
+      "value": "dfaf0c7a-c0bf-4bcb-b459-03ec9dae8d25"
+    },
+    //AAD Group ID for admin access
+    "aksadminaccessprincipalId": {
+      "value": "17cc79c2-cfd6-436e-83f1-d9ae6fe24fed"
+    },
+    "aksIdentityName": {
+      "value": "aksIdentity-demo"
+    }
+  }
+}
