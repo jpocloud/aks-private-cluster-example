@@ -16,6 +16,7 @@ This template deploys a secure AKS baseline cluster with the following high-leve
 ## Deploy
 1. Update parameters-dev.json template for Dev deployment, as an example
 2. Deploy Template, update location to match desired cluster region:
+
 **Dev Deployment:**
 ```
 az deployment sub create --template-file AKS-Cluster-Bicep/main.bicep --parameters @AKS-Cluster-Bicep/parameters-dev.json --location eastus2
