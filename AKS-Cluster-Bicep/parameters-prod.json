@@ -36,9 +36,14 @@
     "upgradeChannel": {
       "value": "None"
     },
-    //Currently all nodes will use this SKU.
-    "vmSize": {
-      "value": "Standard_D2AS_V4"
+    "systemNodePoolSku": {
+      "value": "Standard_D4lds_v5"
+    },
+    "userNodePool1Sku": {
+      "value": "Standard_D4lds_v5"
+    },
+    "userNodePool2Sku": {
+      "value": "Standard_D4lds_v5"
     },
     "systemNodePoolReplicas":{
       "value": 1

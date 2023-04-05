@@ -17,7 +17,10 @@ param systemNodePoolReplicas int
 param userNodePool1Replicas int
 param userNodePool2Replicas int
 
-param vmSize string
+param systemNodePoolSku string
+param userNodePool1Sku string
+param userNodePool2Sku string
+
 
 @allowed([
   'azure'
@@ -49,7 +52,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-11-01' = {
         ]
         minCount: enableAutoScaling ? 1 : null
         maxCount: enableAutoScaling ? 3 : null
-        vmSize: vmSize
+        vmSize: systemNodePoolSku
         osDiskSizeGB: 30
         type: 'VirtualMachineScaleSets'
         vnetSubnetID: subnetId
@@ -63,7 +66,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-11-01' = {
         count: userNodePool1Replicas
         minCount: enableAutoScaling ? 1 : null
         maxCount: enableAutoScaling ? 3 : null
-        vmSize: vmSize
+        vmSize: userNodePool1Sku
         osDiskSizeGB: 30
         type: 'VirtualMachineScaleSets'
         vnetSubnetID: subnetId
@@ -77,7 +80,7 @@ resource aksCluster 'Microsoft.ContainerService/managedClusters@2022-11-01' = {
         count: userNodePool2Replicas
         minCount: enableAutoScaling ? 1 : null
         maxCount: enableAutoScaling ? 3 : null
-        vmSize: vmSize
+        vmSize: userNodePool2Sku
         osDiskSizeGB: 30
         type: 'VirtualMachineScaleSets'
         vnetSubnetID: subnetId

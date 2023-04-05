@@ -36,8 +36,13 @@
     "upgradeChannel": {
       "value": "rapid"
     },
-    //Currently all nodes will use this SKU.
-    "vmSize": {
+    "systemNodePoolSku": {
+      "value": "Standard_D4lds_v5"
+    },
+    "userNodePool1Sku": {
+      "value": "Standard_D4lds_v5"
+    },
+    "userNodePool2Sku": {
       "value": "Standard_D4lds_v5"
     },
     "systemNodePoolReplicas":{

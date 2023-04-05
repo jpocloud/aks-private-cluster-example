@@ -27,7 +27,9 @@ param nodeOSUpgradeChannel string
 param systemNodePoolReplicas int
 param userNodePool1Replicas int
 param userNodePool2Replicas int
-param vmSize string
+param systemNodePoolSku string
+param userNodePool1Sku string
+param userNodePool2Sku string
 
 param keyVaultRGName string
 param acrRGName string
@@ -116,7 +118,9 @@ module aksCluster 'modules/aks/privateaks.bicep' = {
     autoScalingProfile:autoScalingProfile
     enableAutoScaling: enableAutoScaling
     availabilityZones:availabilityZones
-    vmSize: vmSize
+    userNodePool1Sku: userNodePool1Sku
+    userNodePool2Sku: userNodePool2Sku
+    systemNodePoolSku: systemNodePoolSku
     location: location
     aadGroupdIds: [
       aksadminaccessprincipalId
@@ -240,7 +244,6 @@ module keyvaultAccessPolicy 'modules/keyvault/keyvault.bicep' = {
   params: {
     keyvaultManagedIdentityObjectId: aksCluster.outputs.keyvaultaddonIdentity
     vaultName: keyvaultName
-    aksuseraccessprincipalId: aksuseraccessprincipalId
   }
 }
 
