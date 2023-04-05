@@ -206,12 +206,31 @@ module aksuseraccess 'modules/Identity/role.bicep' = {
   }
 }
 
+module aksuseraccessRBAC 'modules/Identity/role.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: 'aksuseraccessRBAC'
+  params: {
+    principalId: aksuseraccessprincipalId
+    roleGuid: '7f6c6a51-bcf8-42ba-9220-52d62157d7db'    //Azure Kubernetes Service RBAC Reader
+  }
+}
+
 module aksadminaccess 'modules/Identity/role.bicep' = {
   scope: resourceGroup(rg.name)
   name: 'aksadminaccess'
   params: {
     principalId: aksadminaccessprincipalId
     roleGuid: '0ab0b1a8-8aac-4efd-b8c2-3ee1fb270be8' //Azure Kubernetes Service Cluster Admin Role
+  }
+}
+
+module aksadminaccessRBAC 'modules/Identity/role.bicep' = {
+  scope: resourceGroup(rg.name)
+  name: 'aksadminaccessRBAC'
+  params: {
+    principalId: aksadminaccessprincipalId
+    roleGuid: 'b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b' //Azure Kubernetes Service RBAC Cluster Admin
+
   }
 }
 

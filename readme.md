@@ -7,11 +7,12 @@ This template deploys a secure AKS baseline cluster with the following high-leve
 
 ## Prep:
 - Create a resource group to be used, if there is not already one created
-- Create AAD groups for Devs and Admins cluster access, these will be used as PrincipalID paramteres in the template.
+- Create AAD groups for Devs and Admins cluster access, these will be used as PrincipalID parameteres in the template.
+- Create any additional role assignments in AAD for [Azure RBAC](https://learn.microsoft.com/en-us/azure/aks/manage-azure-rbac#create-role-assignments-for-users-to-access-the-cluster)
 - Enable host encryption feature:
   `az feature register --namespace  Microsoft.Compute --name EncryptionAtHost`
 - Once registration is complete, run: `az provider register -n Microsoft.Compute`
-- Requires existing vnet/subnet with udr set on subnet
+- Requires existing vnet/subnet with udr set on subnet, and public internet access through the Firewall/Virtual appliance set as default route in the udr.
 
 ## Deploy
 1. Update parameters-dev.json template for Dev deployment, as an example
